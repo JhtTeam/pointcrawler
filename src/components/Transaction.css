@@ -1,0 +1,13 @@
+.Transaction {
+    background: lightblue;
+    height: 100%;
+}
+
+.Transaction h1 {
+    color: red;
+}
+
+.ListView {
+    pointer-events: none;
+    height: 100%;
+}
