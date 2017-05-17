@@ -4,16 +4,6 @@ import Transaction from './Transaction';
 import { ViewPager, Frame, Track, View, AnimatedView } from 'react-view-pager';
 import axios from 'axios';
 
-function renderPageTitles(accounts) {
-    if (accounts.length > 0) {
-        return accounts.map((account, index) => (
-            <View className="pager-title">{account.institution_account_name}</View>
-        ));
-    } else {
-        return [];
-    }
-}
-
 class ProgressView extends Component {
     render() {
         return (
@@ -132,7 +122,8 @@ class Account extends Component {
                             onViewChange={this.handlePageChange.bind(this)}
                             >
                             {accounts.map((account, index) =>
-                                <ProgressView key={`page-${index}`} children={account.institution_account_name} />
+                                // <ProgressView key={`page-${index}`} children={account.institution_account_name} />
+                                <View className="pager-title">{account.institution_account_name}</View>
                             )}
 
                         </Track>

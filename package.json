@@ -11,6 +11,7 @@
     "react-intl": "^2.3.0",
     "react-list-view": "^1.0.0",
     "react-listview-sticky-header": "^0.5.4",
+    "react-spinkit": "^2.1.2",
     "react-view-pager": "^0.5.1",
     "react-virtualized": "^9.7.5"
   },
