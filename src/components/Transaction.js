@@ -25,11 +25,18 @@ class Transaction extends Component {
     loadTransactions() {
         this.setState({ loading: true, transactions: [] });
         console.log("load transactions with account id : " + this.props.accountId);
-        axios.post("https://wdf0cm73b0.execute-api.ap-northeast-1.amazonaws.com/prod/moneytree/getTransactions", { account_id: this.props.accountId })
-            .then(res => {
-                console.log(res.data);
-                this.setState({ transactions: res.data, loading: false });
-                this.setState({ accountId: this.props.accountId });
+        const { accountId } = this.props;
+        axios.post("https://wdf0cm73b0.execute-api.ap-northeast-1.amazonaws.com/prod/moneytree/getTransactions", { account_id : accountId })
+            .then(res => res.data)
+            .then(data => {
+                console.log(data);
+                var transactions = data.sort((transaction1, transaction2) => {
+                    return transaction2.date.localeCompare(transaction1.date);
+                });
+                return transactions;
+            })
+            .then(transactions => {
+                this.setState({ transactions: transactions, loading: false, accountId : accountId });
             })
             .catch(err => console.log(err));
     }
