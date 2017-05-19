@@ -4,12 +4,15 @@ import ReactListView from 'react-list-view';
 import TransactionItem from './TransactionItem';
 import axios from 'axios';
 import Spinner from 'react-spinkit';
+import AutoSizer from 'react-virtualized/dist/commonjs/AutoSizer'
+import List from 'react-virtualized/dist/commonjs/List'
+import 'react-virtualized/styles.css'
 
 class Transaction extends Component {
     state = {
-        accountId : -1,
-        transactions : [],
-        loading : false
+        accountId: -1,
+        transactions: [],
+        loading: false
     }
     constructor(props) {
         console.log("Transaction... constructor");
@@ -20,17 +23,17 @@ class Transaction extends Component {
     }
 
     loadTransactions() {
-        this.setState({ loading : true, transactions: [] });
+        this.setState({ loading: true, transactions: [] });
         console.log("load transactions with account id : " + this.props.accountId);
-        axios.post("https://wdf0cm73b0.execute-api.ap-northeast-1.amazonaws.com/prod/moneytree/getTransactions", { account_id : this.props.accountId })
-        .then(res => {
-            console.log(res.data);
-            this.setState({ transactions : res.data, loading: false });
-            this.setState({ accountId : this.props.accountId });
-        })
-        .catch(err => console.log(err));
+        axios.post("https://wdf0cm73b0.execute-api.ap-northeast-1.amazonaws.com/prod/moneytree/getTransactions", { account_id: this.props.accountId })
+            .then(res => {
+                console.log(res.data);
+                this.setState({ transactions: res.data, loading: false });
+                this.setState({ accountId: this.props.accountId });
+            })
+            .catch(err => console.log(err));
     }
-    
+
     render() {
         const { loading, accountId, transactions } = this.state;
 
@@ -43,29 +46,63 @@ class Transaction extends Component {
         if (loading) {
             return (
                 <div>
-                    <Spinner spinnerName='three-bounce' className="center"/>
+                    <Spinner spinnerName='three-bounce' className="center" />
                 </div>
             );
         }
         if (transactions.length > 0) {
-            console.log("Transaction... render 1");
+            console.log("Transaction... render : " + transactions.length);
             return (
                 <div className="Transaction">
-                    <ReactListView className="ListView"
-                        rowCount={transactions.length}
-                        rowHeight={30}
-                        renderItem={(x, y, style) =>
-                            <TransactionItem transaction={transactions[y]} style={style} index={y} />
-                        }
-                        />
+                    <AutoSizer disableHeight>
+                        {({ width }) => (
+                            <List
+                                ref='List'
+                                className="ListView"
+                                height={30 * transactions.length}
+                                autoHeight={true}
+                                rowCount={transactions.length}
+                                rowHeight={30}
+                                scrollToIndex={0}
+                                width={width}
+                                rowRenderer={this._rowRenderer.bind(this)}
+                                />
+                        )}
+                    </AutoSizer>
                 </div>
             );
         } else {
-            return(
+            return (
                 <div className="Transaction">
                 </div>
             );
         }
+        // return (
+        //     <div>
+        //     <AutoSizer disableHeight>
+        //         {({ width }) => (
+        //             <List
+        //                 ref='List'
+        //                 className="ListView"
+        //                 height={30 * 160}
+        //                 autoHeight={true}
+        //                 rowCount={160}
+        //                 rowHeight={30}
+        //                 scrollToIndex={0}
+        //                 width={width}
+        //                 rowRenderer={this._rowRenderer.bind(this)}
+        //                 />
+        //         )}
+        //     </AutoSizer>
+        //     </div>
+        // );
+
+    }
+
+    _rowRenderer({ index, isScrolling, key, style }) {
+        return (
+            <TransactionItem transaction={this.state.transactions[index]} style={style} index={index} />
+        );
     }
 }
 
