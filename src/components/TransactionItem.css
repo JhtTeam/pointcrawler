@@ -1,11 +1,14 @@
 .row {
     height: 30px;
     margin: 0px;
+    font-weight: 550;
+    display: flex;
+    align-items: center;
 }
 
-.description {
+/*.description {
     clear: both;
     display: inline-block;
     overflow: hidden;
     white-space: nowrap;
-}
+}*/

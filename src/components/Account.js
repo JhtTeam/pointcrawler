@@ -3,12 +3,14 @@ import './Account.css';
 import Transaction from './Transaction';
 import { ViewPager, Frame, Track, View, AnimatedView } from 'react-view-pager';
 import axios from 'axios';
+import uuid from 'uuid';
+import { reactLocalStorage } from 'reactjs-localstorage';
 
 class ProgressView extends Component {
     render() {
         return (
             <View className="page-title" {...this.props}>
-                <AnimatedView
+                <AnimatedView className="text-center"
                     animations={[{
                         prop: 'opacity',
                         stops: [
@@ -43,58 +45,74 @@ const ProgressBar = ({ progress }) => (
     </div>
 )
 
-const colors = ['#209D22', '#106CCC', '#C1146B', '#11BDBF', '#8A19EA']
-const ProgressPage = ({ view, index, onClick }) => (
-    <AnimatedView
-        key={index}
-        index={index}
-        // index={[0, 1]} // maybe allow the ability to specify a range of indices
-        animations={[{
-            prop: 'scale',
-            stops: [
-                [-300, 0.75],
-                [0, 1],
-                [300, 0.75]
-            ]
-        }, {
-            prop: 'opacity',
-            stops: [
-                [-300, 0.5],
-                [0, 1],
-                [300, 0.5]
-            ]
-        }, {
-            prop: 'backgroundColor',
-            stops: [
-                [-300, '#cccccc'],
-                [0, colors[index]],
-                [300, '#cccccc']
-            ]
-        }]}
-        className="page"
-        onClick={e => {
-            onClick(e)
-        } }
-        />
-)
-
 class Account extends Component {
     state = {
         accounts: [],
-        currentPage : 0,
-        progress : 0
+        currentPage: 0,
+        progress: 0
     }
     _handleScroll = (progress, trackPosition) => {
         this.setState({ progress })
     }
 
-    componentDidMount() {
-        axios.post('https://wdf0cm73b0.execute-api.ap-northeast-1.amazonaws.com/prod/moneytree/getAccounts', { user_id: "dc42dbeef4dc473390376198deeef392" })
-            .then(res => {
-                console.log(res.data);
-                this.setState({ accounts: res.data });
+    getRedirectMoneyTreeUrlAuth(userId) {
+        const redirectWebUrl = encodeURIComponent(window.location.href);
+        const url = "https://wwws-staging.moneytree.jp/link/#/app/oauth/authorize?client_id=c4910a01263c65735bc3e43456240ed94d795be565668caed9f8d7f704481901&redirect_uri=https:%2F%2Fquick-money-recorder.com%2Fapi%2Fmoneytree%2Fcallback%3Fuser_id%3D" + userId + "%26redirect_web_url%3D" + redirectWebUrl + "&response_type=code&scope=guest_read%20accounts_read%20transactions_read%20points_read";
+        console.log("moneytree redirect url: " + url);
+        return url;
+    }
+
+    getAccounts(user) {
+        var accountsString = reactLocalStorage.get('accounts', null);
+        if (accountsString) {
+            var accounts = JSON.parse(accountsString);
+            console.log(accounts);
+            this.setState({ accounts: accounts });
+        }
+
+        axios.post('https://wdf0cm73b0.execute-api.ap-northeast-1.amazonaws.com/prod/moneytree/getAccounts', { moneytree_id: user.moneytree_id })
+            .then(res => res.data)
+            .then(accounts => {
+                console.log(accounts);
+                //cached
+                reactLocalStorage.set('accounts', JSON.stringify(accounts));
+                this.setState({ accounts: accounts });
             })
             .catch(err => console.log(err));
+    }
+
+    componentDidMount() {
+        var userId = reactLocalStorage.get('user_id', '');
+        this.getRedirectMoneyTreeUrlAuth(userId);
+        var userCached = reactLocalStorage.get('user', null);
+        console.log("userId = " + userId);
+        console.log("userCached = " + userCached);
+        if (!userId || userId.length == 0) {
+            userId = uuid.v4();
+            console.log("create user id: " + userId);
+            reactLocalStorage.set("user_id", userId);
+            //redirect to auth moneytree
+            window.location.replace(this.getRedirectMoneyTreeUrlAuth(userId));
+        } else {
+            if (!userCached) {
+                axios.post('https://wdf0cm73b0.execute-api.ap-northeast-1.amazonaws.com/prod/moneytree/getUser', { user_id: userId })
+                .then(res => res.data)
+                .then(userResponse => {
+                    if (userResponse && userResponse.moneytree_id) {
+                        reactLocalStorage.set("user", JSON.stringify(userResponse));
+                        //get money tree account
+                        this.getAccounts(userResponse);
+                    } else {
+                        window.location.replace(this.getRedirectMoneyTreeUrlAuth(userId));
+                    }
+                })
+                .catch(err => console.log(err));
+            } else {
+                const user = JSON.parse(userCached);
+                console.log(JSON.stringify(user));
+                this.getAccounts(user);
+            }
+        }
     }
 
     handlePageChange(index) {
@@ -103,7 +121,7 @@ class Account extends Component {
     }
 
     render() {
-        const { accounts, currentPage, progress } = this.state
+        const { accounts, currentPage, progress } = this.state;
         if (accounts.length > 0) {
             const currentAccount = accounts[currentPage];
             return (
@@ -128,7 +146,7 @@ class Account extends Component {
 
                         </Track>
                     </Frame>
-                    <ProgressBar progress={progress}/>
+                    <ProgressBar progress={progress} />
                     <nav className="pager">
                         <Transaction accountId={currentAccount.id} />
                     </nav>

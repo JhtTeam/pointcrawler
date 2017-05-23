@@ -18,14 +18,6 @@
   font-size: large;
 }
 
-.pager-title {
-  font-size: large;
-  height: 50px;
-  background: grey;
-  text-align: center;
-  color: white;
-}
-
 @keyframes App-logo-spin {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }

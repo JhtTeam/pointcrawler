@@ -1,16 +1,26 @@
-.page-title {
+.pager-title {
     color: white;
     height: 50px;
     line-height: 50px;
     width: 100%;
+    font-size: large;
     background-color: grey;
     text-align: center;
     align-content: center;
     flex: 1;
 }
+
 .track {
   display: flex;
 }
+.track-y {
+  flex-direction: column;  
+}
+
+.track-y .view {
+    width: 100%;
+  }
+
 
 .frame {
     background-color: grey;
@@ -19,7 +29,15 @@
 }
 
 .pager {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
     margin: 0px;
+}
+
+.pager > div {
+  width: 100% !important;
+  height: 100% !important;
 }
 
 .progress-container {
@@ -35,4 +53,12 @@
   background: #ffbc00;
   transform-origin: left center;
   position: absolute;
+}
+
+.page {
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background: #ccc;
+  cursor: pointer;
 }

@@ -1,0 +1,6 @@
+.TransactionGroupItem {
+    background-color: lightgray;
+    height: 30px;
+    font-weight: 700;
+    display: flex;
+}
