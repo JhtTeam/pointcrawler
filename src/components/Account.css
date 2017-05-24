@@ -62,3 +62,8 @@
   background: #ccc;
   cursor: pointer;
 }
+
+.transaction {
+  height: 100%;
+  min-height: 600px;
+}

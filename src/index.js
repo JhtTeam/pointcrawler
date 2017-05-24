@@ -5,8 +5,9 @@ import './index.css';
 import { IntlProvider } from 'react-intl';
 
 ReactDOM.render(
-  <IntlProvider locale="ja-JP">
+  // <IntlProvider locale="ja-JP">
     <App />
-  </IntlProvider>,
+  // </IntlProvider>
+  ,
   document.getElementById('root')
 );

@@ -5,51 +5,15 @@ import { ViewPager, Frame, Track, View, AnimatedView } from 'react-view-pager';
 import axios from 'axios';
 import uuid from 'uuid';
 import { reactLocalStorage } from 'reactjs-localstorage';
-
-class ProgressView extends Component {
-    render() {
-        return (
-            <View className="page-title" {...this.props}>
-                <AnimatedView className="text-center"
-                    animations={[{
-                        prop: 'opacity',
-                        stops: [
-                            [-200, 0],
-                            [0, 1],
-                            [200, 0]
-                        ]
-                    }, {
-                        prop: 'translateY',
-                        stops: [
-                            [-200, 50],
-                            [0, 0],
-                            [200, 50]
-                        ]
-                    }]}
-                    >
-                    {this.props.children}
-                </AnimatedView>
-            </View>
-        )
-    }
-}
-
-const ProgressBar = ({ progress }) => (
-    <div className="progress-container">
-        <div
-            className="progress-bar"
-            style={{
-                transform: `scaleX(${Math.max(0, Math.min(1, progress))})`,
-            }}
-            />
-    </div>
-)
+import SwipeableViews from 'react-swipeable-views';
+import Tabs, { Tab } from 'material-ui/Tabs';
 
 class Account extends Component {
     state = {
         accounts: [],
         currentPage: 0,
-        progress: 0
+        progress: 0,
+        switching: false,
     }
     _handleScroll = (progress, trackPosition) => {
         this.setState({ progress })
@@ -66,8 +30,15 @@ class Account extends Component {
         var accountsString = reactLocalStorage.get('accounts', null);
         if (accountsString) {
             var accounts = JSON.parse(accountsString);
-            console.log(accounts);
             this.setState({ accounts: accounts });
+
+            // var results = [];
+            // results.push(accounts[0]);
+            // results.push(accounts[1]);
+            // results.push(accounts[2]);
+            // results.push(accounts[3]);
+            // console.log(accounts);
+            // this.setState({ accounts: results });
         }
 
         axios.post('https://wdf0cm73b0.execute-api.ap-northeast-1.amazonaws.com/prod/moneytree/getAccounts', { moneytree_id: user.moneytree_id })
@@ -96,17 +67,17 @@ class Account extends Component {
         } else {
             if (!userCached) {
                 axios.post('https://wdf0cm73b0.execute-api.ap-northeast-1.amazonaws.com/prod/moneytree/getUser', { user_id: userId })
-                .then(res => res.data)
-                .then(userResponse => {
-                    if (userResponse && userResponse.moneytree_id) {
-                        reactLocalStorage.set("user", JSON.stringify(userResponse));
-                        //get money tree account
-                        this.getAccounts(userResponse);
-                    } else {
-                        window.location.replace(this.getRedirectMoneyTreeUrlAuth(userId));
-                    }
-                })
-                .catch(err => console.log(err));
+                    .then(res => res.data)
+                    .then(userResponse => {
+                        if (userResponse && userResponse.moneytree_id) {
+                            reactLocalStorage.set("user", JSON.stringify(userResponse));
+                            //get money tree account
+                            this.getAccounts(userResponse);
+                        } else {
+                            window.location.replace(this.getRedirectMoneyTreeUrlAuth(userId));
+                        }
+                    })
+                    .catch(err => console.log(err));
             } else {
                 const user = JSON.parse(userCached);
                 console.log(JSON.stringify(user));
@@ -115,51 +86,60 @@ class Account extends Component {
         }
     }
 
+    shouldComponentUpdate(nextProps, nextState) {
+        if (nextState.accounts.length == this.state.accounts.length && nextState.switching) {
+            return false;
+        }
+        return true;
+    }
+
     handlePageChange(index) {
         console.log("page change : " + index);
         this.setState({ currentPage: index });
     }
 
+    handleChange = (event, value) => {
+        console.log("handleChange... " + value);
+        this.setState({
+            currentPage: value,
+        });
+    };
+
+    handleChangeIndex = (index) => {
+        console.log("handleChangeIndex... " + index);
+        this.setState({
+            currentPage: index,
+        });
+    };
+
+    handleSwitching = (index, type) => {
+        console.log("handleSwitching... " + index + " -- " + type);
+        const isSwitching = (type === "move") ? true : false;
+        const { switching } = this.state;
+        if (switching !== isSwitching) {
+            this.setState({ switching: isSwitching });
+        }
+    }
+
     render() {
         const { accounts, currentPage, progress } = this.state;
-        if (accounts.length > 0) {
-            const currentAccount = accounts[currentPage];
-            return (
-                <ViewPager className="viewport">
-                    <Frame
-                        ref={c => this.frame = c}
-                        className="frame"
-                        >
-                        <Track
-                            ref={c => this.track = c}
-                            viewsToShow={1}
-                            infinite
-                            className="track"
-                            align={0.5}
-                            onScroll={this._handleScroll.bind(this)}
-                            onViewChange={this.handlePageChange.bind(this)}
-                            >
-                            {accounts.map((account, index) =>
-                                // <ProgressView key={`page-${index}`} children={account.institution_account_name} />
-                                <View className="pager-title">{account.institution_account_name}</View>
-                            )}
+        // console.log(currentPage + " --  " + accounts);
+        return (
+            <div>
+                <Tabs index={currentPage} onChange={this.handleChange.bind(this)}>
+                    {accounts.map((account, index) =>
+                        <Tab label={account.institution_account_name} value={index} key={account.id}/>
+                    )}
+                </Tabs>
+                <SwipeableViews index={currentPage} animateTransitions={false} disabled={false} onChangeIndex={this.handleChangeIndex.bind(this)} onSwitching={this.handleSwitching.bind(this)}>
+                    {accounts.map((account, index) =>
+                        // <Transaction accountId={account.id} />
+                        <Transaction accountId={account.id} key={account.id}/>
+                    )}
 
-                        </Track>
-                    </Frame>
-                    <ProgressBar progress={progress} />
-                    <nav className="pager">
-                        <Transaction accountId={currentAccount.id} />
-                    </nav>
-                </ViewPager>
-            );
-        } else {
-            return (
-                <div>
-
-                </div>
-            );
-        }
-
+                </SwipeableViews>
+            </div>
+        );
     }
 }
 

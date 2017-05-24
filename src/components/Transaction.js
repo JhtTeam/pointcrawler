@@ -30,13 +30,20 @@ class Transaction extends Component {
     }
 
     componentWillReceiveProps(nextProps) {
-        // console.log("Transaction ... componentWillReceiveProps : " + nextProps);
         const { accountId } = nextProps;
         if (this.state.accountId > 0 && this.state.accountId !== accountId) {
             this.setState({ accountId : accountId });
             this.loadTransactions(accountId);
         }
     }
+
+    shouldComponentUpdate(nextProps, nextState) {
+        if (nextState.rowCount == this.state.rowCount) {
+            return false;
+        }
+        return true;
+    }
+    
 
     loadTransactions(accountId) {
         console.log("load transactions with account id : " + accountId);
@@ -46,9 +53,11 @@ class Transaction extends Component {
             const groups = this.groupTransactions(transactionsCached);
             this.setState({ groups: groups.groups, loading: false, accountId: accountId, rowCount: groups.rowCount });
         } else {
-            this.setState({ loading: true });
+            // this.setState({ loading: true });
 
-            axios.post("https://wdf0cm73b0.execute-api.ap-northeast-1.amazonaws.com/prod/moneytree/getTransactions", { account_id: accountId })
+            
+        }
+        axios.post("https://wdf0cm73b0.execute-api.ap-northeast-1.amazonaws.com/prod/moneytree/getTransactions", { account_id: accountId })
                 .then(res => res.data)
                 .then(transactions => {
                     return transactions.sort((transaction1, transaction2) => {
@@ -64,7 +73,6 @@ class Transaction extends Component {
                     // this.setState(..., { groups: groups });
                 })
                 .catch(err => console.log(err));
-        }
     }
 
     groupTransactions(data) {
@@ -98,6 +106,11 @@ class Transaction extends Component {
         // console.log("group length = " + rowCount);
 
         console.log("Transaction... render : " + accountId + "--- props accountid: " + this.props.accountId);
+        // return (
+        //         <div className="Transaction">
+        //             {accountId}
+        //         </div>
+        //     );
 
         if (loading) {
             return (
