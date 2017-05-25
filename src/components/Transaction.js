@@ -119,33 +119,21 @@ class Transaction extends Component {
         if (rowCount > 0) {
             const rowHeight = 30;
             return (
-                <List
-                    ref='List'
-                    className="ListView"
-                    height={rowHeight * rowCount}
-                    autoHeight={true}
-                    rowCount={rowCount}
-                    rowHeight={rowHeight}
-                    scrollToIndex={0}
-                    width={window.innerWidth}
-                    rowRenderer={this._rowRenderer.bind(this)}
-                    />
-
-                // <AutoSizer>
-                //     {({ height, width }) => (
-                //         <List
-                //             ref='List'
-                //             className="ListView"
-                //             height={rowHeight * rowCount}
-                //             autoHeight={true}
-                //             rowCount={rowCount}
-                //             rowHeight={rowHeight}
-                //             scrollToIndex={0}
-                //             width={width}
-                //             rowRenderer={this._rowRenderer.bind(this)}
-                //             />
-                //     )}
-                // </AutoSizer>
+                <AutoSizer disableHeight={true}>
+                    {({ width, height }) => (
+                        <List
+                            ref='List'
+                            className="ListView"
+                            height={rowHeight * rowCount}
+                            autoHeight={true}
+                            rowCount={rowCount}
+                            rowHeight={rowHeight}
+                            scrollToIndex={0}
+                            width={width}
+                            rowRenderer={this._rowRenderer.bind(this)}
+                            />
+                    )}
+                </AutoSizer>
             );
         } else {
             return (
