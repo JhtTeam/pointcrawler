@@ -6,7 +6,6 @@ import uuid from 'uuid';
 import { reactLocalStorage } from 'reactjs-localstorage';
 import SwipeableViews from 'react-swipeable-views';
 import Tabs, { Tab } from 'material-ui/Tabs';
-import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 
 class Account extends Component {
     state = {
@@ -112,20 +111,18 @@ class Account extends Component {
     render() {
         const { accounts, currentPage } = this.state;
         return (
-            <MuiThemeProvider>
-                <div>
-                    <Tabs index={currentPage} onChange={this.handleChange.bind(this)}>
-                        {accounts.map((account, index) =>
-                            <Tab label={account.institution_account_name} key={account.id} />
-                        )}
-                    </Tabs>
-                    <SwipeableViews index={currentPage} animateTransitions={false} ignoreNativeScroll={true} onChangeIndex={this.handleChangeIndex.bind(this)} onSwitching={this.handleSwitching.bind(this)}>
-                        {accounts.map((account, index) =>
-                            <Transaction accountId={account.id} key={account.id} />
-                        )}
-                    </SwipeableViews>
-                </div>
-            </MuiThemeProvider>
+            <div>
+                <Tabs index={currentPage} onChange={this.handleChange.bind(this)} className="Tabs">
+                    {accounts.map((account, index) =>
+                        <Tab label={account.institution_account_name} key={account.id} />
+                    )}
+                </Tabs>
+                <SwipeableViews index={currentPage} animateTransitions={false} ignoreNativeScroll={true} onChangeIndex={this.handleChangeIndex.bind(this)} onSwitching={this.handleSwitching.bind(this)}>
+                    {accounts.map((account, index) =>
+                        <Transaction accountId={account.id} key={account.id} />
+                    )}
+                </SwipeableViews>
+            </div>
         );
     }
 }
