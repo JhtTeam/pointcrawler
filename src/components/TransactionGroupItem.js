@@ -6,7 +6,7 @@ class TransactionGroupItem extends Component {
     render() {
         const { transactions } = this.props;
         // console.log(transactions);
-        if (!transactions || transactions.length == 0) {
+        if (!transactions || transactions.length === 0) {
             return (
                 <div>
                     

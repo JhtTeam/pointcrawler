@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import './Transaction.css';
-import ReactListView from 'react-list-view';
 import TransactionItem from './TransactionItem';
 import TransactionGroupItem from './TransactionGroupItem';
 import axios from 'axios';
@@ -9,8 +8,7 @@ import AutoSizer from 'react-virtualized/dist/commonjs/AutoSizer'
 import List from 'react-virtualized/dist/commonjs/List'
 import 'react-virtualized/styles.css'
 import moment from 'moment';
-import ReactPullToRefresh from 'react-pull-to-refresh';
-import PullRefresh from 'react-pullrefresh'
+// import ReactPullToRefresh from 'react-pull-to-refresh';
 import { reactLocalStorage } from 'reactjs-localstorage';
 
 class Transaction extends Component {
@@ -32,18 +30,18 @@ class Transaction extends Component {
     componentWillReceiveProps(nextProps) {
         const { accountId } = nextProps;
         if (this.state.accountId > 0 && this.state.accountId !== accountId) {
-            this.setState({ accountId : accountId });
+            this.setState({ accountId: accountId });
             this.loadTransactions(accountId);
         }
     }
 
     shouldComponentUpdate(nextProps, nextState) {
-        if (nextState.rowCount == this.state.rowCount) {
+        if (nextState.rowCount === this.state.rowCount) {
             return false;
         }
         return true;
     }
-    
+
 
     loadTransactions(accountId) {
         console.log("load transactions with account id : " + accountId);
@@ -55,7 +53,7 @@ class Transaction extends Component {
         } else {
             // this.setState({ loading: true });
 
-            
+
         }
         axios.post("https://wdf0cm73b0.execute-api.ap-northeast-1.amazonaws.com/prod/moneytree/getTransactions", { account_id: accountId })
                 .then(res => res.data)
@@ -102,10 +100,9 @@ class Transaction extends Component {
     render() {
 
         const { loading, accountId, groups, rowCount } = this.state;
-        // var rowCount = Object.keys(groups).length;
-        // console.log("group length = " + rowCount);
-
-        console.log("Transaction... render : " + accountId + "--- props accountid: " + this.props.accountId);
+        console.log("group length = " + rowCount);
+        console.log(window.innerWidth);
+        // console.log("Transaction... render : " + accountId + "--- props accountid: " + this.props.accountId);
         // return (
         //         <div className="Transaction">
         //             {accountId}
@@ -122,30 +119,33 @@ class Transaction extends Component {
         if (rowCount > 0) {
             const rowHeight = 30;
             return (
-                <AutoSizer>
-                    {({ height, width }) => (
-                        <PullRefresh
-                            zIndex={10000}
-                            size={40}
-                            max={100}
-                            onRefresh={this.onRefresh.bind(this)}
-                            style={{ overflow: 'visible', height: '100%', width: '100%' }}>
-                            <div style={{ overflow: 'visible', height: '100%', width: '100%' }}>
-                                <List
-                                    ref='List'
-                                    className="ListView"
-                                    height={rowHeight * rowCount}
-                                    autoHeight={true}
-                                    rowCount={rowCount}
-                                    rowHeight={rowHeight}
-                                    scrollToIndex={0}
-                                    width={width}
-                                    rowRenderer={this._rowRenderer.bind(this)}
-                                    />
-                            </div>
-                        </PullRefresh>
-                    )}
-                </AutoSizer>
+                <List
+                    ref='List'
+                    className="ListView"
+                    height={rowHeight * rowCount}
+                    autoHeight={true}
+                    rowCount={rowCount}
+                    rowHeight={rowHeight}
+                    scrollToIndex={0}
+                    width={window.innerWidth}
+                    rowRenderer={this._rowRenderer.bind(this)}
+                    />
+
+                // <AutoSizer>
+                //     {({ height, width }) => (
+                //         <List
+                //             ref='List'
+                //             className="ListView"
+                //             height={rowHeight * rowCount}
+                //             autoHeight={true}
+                //             rowCount={rowCount}
+                //             rowHeight={rowHeight}
+                //             scrollToIndex={0}
+                //             width={width}
+                //             rowRenderer={this._rowRenderer.bind(this)}
+                //             />
+                //     )}
+                // </AutoSizer>
             );
         } else {
             return (
@@ -159,51 +159,21 @@ class Transaction extends Component {
         // console.log("row renderer : " + index);
         const { groups } = this.state;
         var counting = 0;
-        // const date = Object.keys(groups)[index];
-        // const transactions = groups[date];
-        // return (
-        //     <TransactionGroupItem transactions={transactions} />
-        // );
         for (var key in groups) {
-            // console.log(key);
             const transactions = groups[key];
             if (counting === index) {
-                // console.log("TransactionGroupItem");
                 return (
-                    <TransactionGroupItem transactions={transactions} />
+                    <TransactionGroupItem transactions={transactions} key={index}/>
                 );
             }
             counting += transactions.length + 1;
             if (index < counting) {
                 var i = counting - index - 1;
-                // console.log("TransactionItem");
                 return (
-                    <TransactionItem transaction={transactions[i]} index={index} />
+                    <TransactionItem transaction={transactions[i]} index={index} key={index}/>
                 );
             }
         }
-
-        // groups.map((key) => {
-        //     console.log(key);
-        // });
-        // groups.map((transactions, index) => {
-        //     console.log(transactions);
-        //     if (counting === index) {
-        //         console.log("TransactionGroupItem");
-        //         return (
-        //             <TransactionGroupItem group={transactions} />
-        //         );
-        //     }
-        //     counting += transactions.length;
-        //     if (index < counting) {
-        //         var i = index - counting;
-        //         console.log("TransactionItem");
-        //         return (
-        //             <TransactionItem transaction={transactions[i]} style={style} />
-        //         );
-
-        //     }
-        // });
         return (
             <div>
                 {index}

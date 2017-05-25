@@ -1,22 +1,18 @@
 import React, { Component } from 'react';
 import './Account.css';
 import Transaction from './Transaction';
-import { ViewPager, Frame, Track, View, AnimatedView } from 'react-view-pager';
 import axios from 'axios';
 import uuid from 'uuid';
 import { reactLocalStorage } from 'reactjs-localstorage';
 import SwipeableViews from 'react-swipeable-views';
 import Tabs, { Tab } from 'material-ui/Tabs';
+import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 
 class Account extends Component {
     state = {
         accounts: [],
         currentPage: 0,
-        progress: 0,
         switching: false,
-    }
-    _handleScroll = (progress, trackPosition) => {
-        this.setState({ progress })
     }
 
     getRedirectMoneyTreeUrlAuth(userId) {
@@ -58,7 +54,7 @@ class Account extends Component {
         var userCached = reactLocalStorage.get('user', null);
         console.log("userId = " + userId);
         console.log("userCached = " + userCached);
-        if (!userId || userId.length == 0) {
+        if (!userId || userId.length === 0) {
             userId = uuid.v4();
             console.log("create user id: " + userId);
             reactLocalStorage.set("user_id", userId);
@@ -87,33 +83,25 @@ class Account extends Component {
     }
 
     shouldComponentUpdate(nextProps, nextState) {
-        if (nextState.accounts.length == this.state.accounts.length && nextState.switching) {
+        if (nextState.accounts.length === this.state.accounts.length && nextState.switching) {
             return false;
         }
         return true;
     }
 
-    handlePageChange(index) {
-        console.log("page change : " + index);
-        this.setState({ currentPage: index });
-    }
-
     handleChange = (event, value) => {
-        console.log("handleChange... " + value);
         this.setState({
             currentPage: value,
         });
     };
 
     handleChangeIndex = (index) => {
-        console.log("handleChangeIndex... " + index);
         this.setState({
             currentPage: index,
         });
     };
 
     handleSwitching = (index, type) => {
-        console.log("handleSwitching... " + index + " -- " + type);
         const isSwitching = (type === "move") ? true : false;
         const { switching } = this.state;
         if (switching !== isSwitching) {
@@ -122,23 +110,22 @@ class Account extends Component {
     }
 
     render() {
-        const { accounts, currentPage, progress } = this.state;
-        // console.log(currentPage + " --  " + accounts);
+        const { accounts, currentPage } = this.state;
         return (
-            <div>
-                <Tabs index={currentPage} onChange={this.handleChange.bind(this)}>
-                    {accounts.map((account, index) =>
-                        <Tab label={account.institution_account_name} value={index} key={account.id}/>
-                    )}
-                </Tabs>
-                <SwipeableViews index={currentPage} animateTransitions={false} disabled={false} onChangeIndex={this.handleChangeIndex.bind(this)} onSwitching={this.handleSwitching.bind(this)}>
-                    {accounts.map((account, index) =>
-                        // <Transaction accountId={account.id} />
-                        <Transaction accountId={account.id} key={account.id}/>
-                    )}
-
-                </SwipeableViews>
-            </div>
+            <MuiThemeProvider>
+                <div>
+                    <Tabs index={currentPage} onChange={this.handleChange.bind(this)}>
+                        {accounts.map((account, index) =>
+                            <Tab label={account.institution_account_name} key={account.id} />
+                        )}
+                    </Tabs>
+                    <SwipeableViews index={currentPage} animateTransitions={false} ignoreNativeScroll={true} onChangeIndex={this.handleChangeIndex.bind(this)} onSwitching={this.handleSwitching.bind(this)}>
+                        {accounts.map((account, index) =>
+                            <Transaction accountId={account.id} key={account.id} />
+                        )}
+                    </SwipeableViews>
+                </div>
+            </MuiThemeProvider>
         );
     }
 }
